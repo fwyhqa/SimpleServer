@@ -1,107 +1,49 @@
-const app = new Vue({
+new Vue({
   el: '#app',
   data: {
     users: [],
-    items: [],
-    userItems: [],
-    newUser: { username: '', password: '', level: 1 },
-    newItem: { name: '', description: '' },
-    newUserItem: { userId: '', itemId: '' },
-    login: { username: '', password: '' },
-    loginMessage: ''
+    username: '',
+    password: '',
+    loginMessage: '',
+    loginSuccess: false
   },
   methods: {
+    async login() {
+      try {
+        const response = await axios.post('/api/login', {
+          username: this.username,
+          password: this.password
+        });
+        this.loginMessage = response.data.message;
+        this.loginSuccess = response.data.success;
+        if (response.data.success) {
+          this.fetchUsers();
+        }
+      } catch (error) {
+        this.loginMessage = 'Login failed: ' + (error.response?.data?.message || 'Server error');
+        this.loginSuccess = false;
+      }
+    },
     async fetchUsers() {
-      const res = await fetch('/api/users');
-      const data = await res.json();
-      if (data.success) this.users = data.users;
-    },
-    async addUser() {
-      await fetch('/api/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(this.newUser)
-      });
-      this.newUser = { username: '', password: '', level: 1 };
-      this.fetchUsers();
-    },
-    async updateUser(user) {
-      await fetch(`/api/users/${user.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(user)
-      });
-      this.fetchUsers();
+      try {
+        const response = await axios.get('/api/users');
+        this.users = response.data;
+      } catch (error) {
+        console.error('Failed to fetch users:', error);
+      }
     },
     async deleteUser(id) {
-      await fetch(`/api/users/${id}`, { method: 'DELETE' });
-      this.fetchUsers();
-    },
-    async upgradeUser(id) {
-      await fetch('/api/upgrade', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: id })
-      });
-      this.fetchUsers();
-    },
-    async fetchItems() {
-      const res = await fetch('/api/items');
-      const data = await res.json();
-      if (data.success) this.items = data.items;
-    },
-    async addItem() {
-      await fetch('/api/items', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(this.newItem)
-      });
-      this.newItem = { name: '', description: '' };
-      this.fetchItems();
-    },
-    async updateItem(item) {
-      await fetch(`/api/items/${item.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(item)
-      });
-      this.fetchItems();
-    },
-    async deleteItem(id) {
-      await fetch(`/api/items/${id}`, { method: 'DELETE' });
-      this.fetchItems();
-    },
-    async fetchUserItems() {
-      const res = await fetch('/api/user-items');
-      const data = await res.json();
-      if (data.success) this.userItems = data.userItems;
-    },
-    async addUserItem() {
-      await fetch('/api/get-item', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(this.newUserItem)
-      });
-      this.newUserItem = { userId: '', itemId: '' };
-      this.fetchUserItems();
-    },
-    async deleteUserItem(id) {
-      await fetch(`/api/user-items/${id}`, { method: 'DELETE' });
-      this.fetchUserItems();
-    },
-    async testLogin() {
-      const res = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(this.login)
-      });
-      const data = await res.json();
-      this.loginMessage = data.message;
+      if (confirm('Are you sure you want to delete this user?')) {
+        try {
+          await axios.delete(`/api/users/${id}`);
+          this.fetchUsers();
+        } catch (error) {
+          console.error('Failed to delete user:', error);
+        }
+      }
     }
   },
   mounted() {
     this.fetchUsers();
-    this.fetchItems();
-    this.fetchUserItems();
   }
 });

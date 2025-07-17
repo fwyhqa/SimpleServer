@@ -4,115 +4,59 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Simple Server Admin</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/css/style.css">
-  <script src="/lib/vue.min.js"></script>
 </head>
 <body>
-  <div id="app">
-    <h1>Simple Server Admin</h1>
-
-    <!-- 用户管理 -->
-    <h2>Users</h2>
-    <div>
-      <input v-model="newUser.username" placeholder="Username">
-      <input v-model="newUser.password" placeholder="Password" type="password">
-      <input v-model="newUser.level" placeholder="Level" type="number">
-      <button @click="addUser">Add User</button>
+  <div id="app" class="container mt-5">
+    <h1 class="mb-4 text-center">Simple Server Admin</h1>
+    
+    <!-- Login Form -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <h3 class="card-title">Login</h3>
+        <div class="mb-3">
+          <label for="username" class="form-label">Username</label>
+          <input v-model="username" type="text" class="form-control" id="username" placeholder="Enter username">
+        </div>
+        <div class="mb-3">
+          <label for="password" class="form-label">Password</label>
+          <input v-model="password" type="password" class="form-control" id="password" placeholder="Enter password">
+        </div>
+        <button @click="login" class="btn btn-primary">Login</button>
+        <p v-if="loginMessage" class="mt-2" :class="loginSuccess ? 'text-success' : 'text-danger'">{{ loginMessage }}</p>
+      </div>
     </div>
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Username</th>
-          <th>Level</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="user in users" :key="user.id">
-          <td>{{ user.id }}</td>
-          <td><input v-model="user.username"></td>
-          <td><input v-model="user.level" type="number"></td>
-          <td>
-            <button @click="updateUser(user)">Update</button>
-            <button @click="deleteUser(user.id)">Delete</button>
-            <button @click="upgradeUser(user.id)">Upgrade</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <!-- 物品管理 -->
-    <h2>Items</h2>
-    <div>
-      <input v-model="newItem.name" placeholder="Item Name">
-      <input v-model="newItem.description" placeholder="Description">
-      <button @click="addItem">Add Item</button>
-    </div>
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Name</th>
-          <th>Description</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="item in items" :key="item.id">
-          <td>{{ item.id }}</td>
-          <td><input v-model="item.name"></td>
-          <td><input v-model="item.description"></td>
-          <td>
-            <button @click="updateItem(item)">Update</button>
-            <button @click="deleteItem(item.id)">Delete</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <!-- 用户物品管理 -->
-    <h2>User Items</h2>
-    <div>
-      <select v-model="newUserItem.userId">
-        <option v-for="user in users" :value="user.id">{{ user.username }}</option>
-      </select>
-      <select v-model="newUserItem.itemId">
-        <option v-for="item in items" :value="item.id">{{ item.name }}</option>
-      </select>
-      <button @click="addUserItem">Add User Item</button>
-    </div>
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Username</th>
-          <th>Item Name</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="userItem in userItems" :key="userItem.id">
-          <td>{{ userItem.id }}</td>
-          <td>{{ userItem.username }}</td>
-          <td>{{ userItem.name }}</td>
-          <td>
-            <button @click="deleteUserItem(userItem.id)">Delete</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <!-- 登录测试 -->
-    <h2>Login Test</h2>
-    <div>
-      <input v-model="login.username" placeholder="Username">
-      <input v-model="login.password" placeholder="Password" type="password">
-      <button @click="testLogin">Login</button>
-      <p>{{ loginMessage }}</p>
+    
+    <!-- User List -->
+    <div class="card">
+      <div class="card-body">
+        <h3 class="card-title">User List</h3>
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Username</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="user in users" :key="user.id">
+              <td>{{ user.id }}</td>
+              <td>{{ user.username }}</td>
+              <td>
+                <button @click="deleteUser(user.id)" class="btn btn-danger btn-sm">Delete</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <button @click="fetchUsers" class="btn btn-secondary">Refresh Users</button>
+      </div>
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="/js/app.js"></script>
 </body>
 </html>
