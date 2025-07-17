@@ -10,4 +10,21 @@ const pool = mysql.createPool({
   queueLimit: 0
 });
 
+async function connectWithRetry() {
+  let retries = 5;
+  while (retries) {
+    try {
+      await pool.getConnection();
+      console.log('Connected to MySQL');
+      return;
+    } catch (err) {
+      console.error('MySQL connection failed:', err);
+      retries -= 1;
+      await new Promise(resolve => setTimeout(resolve, 5000));
+    }
+  }
+  throw new Error('Failed to connect to MySQL');
+}
+connectWithRetry();
+
 module.exports = pool;
